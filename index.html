@@ -2,151 +2,325 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>日报生成器</title>
   <style>
     :root {
       color-scheme: light;
-      --bg: #f6f7f9;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --line: #d9dee7;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
+      --bg: #eef3f8;
+      --text: #182230;
+      --muted: #667085;
+      --subtle: #8a95a6;
+      --line: #d7dde8;
+      --primary: #2264e5;
+      --primary-dark: #174cb8;
       --surface: #ffffff;
-      --danger: #b91c1c;
+      --surface-soft: #f8fafc;
+      --danger: #b42318;
+      --shadow: 0 18px 45px rgba(28, 40, 64, 0.12);
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html {
+      background: var(--bg);
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at top left, rgba(34, 100, 229, 0.16), transparent 28rem),
+        linear-gradient(180deg, #f7faff 0%, var(--bg) 44%, #f7f8fb 100%);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
       line-height: 1.6;
     }
 
-    main {
-      width: min(760px, 100%);
-      margin: 0 auto;
-      padding: 24px 16px 40px;
+    button,
+    textarea {
+      font: inherit;
     }
 
-    h1 {
-      margin: 0 0 6px;
-      font-size: 24px;
+    main {
+      width: min(560px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+    }
+
+    .hero {
+      padding: 12px 2px 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(34, 100, 229, 0.16);
+      border-radius: 999px;
+      padding: 2px 10px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--primary-dark);
+      font-size: 13px;
       font-weight: 700;
     }
 
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.18;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
     .subtitle {
-      margin: 0 0 20px;
+      margin: 10px 0 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 15px;
+    }
+
+    .panel {
+      border: 1px solid rgba(215, 221, 232, 0.86);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .field-top {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .hint {
+      color: var(--subtle);
+      font-size: 12px;
+      white-space: nowrap;
     }
 
     textarea {
       width: 100%;
-      min-height: 180px;
+      min-height: 210px;
       resize: vertical;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 12px;
-      background: var(--surface);
+      padding: 13px 14px;
+      background: var(--surface-soft);
       color: var(--text);
-      font: inherit;
       outline: none;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    textarea::placeholder {
+      color: #8d98a8;
     }
 
     textarea:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(34, 100, 229, 0.12);
     }
 
-    button {
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      border: 1px solid #dce4f2;
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #f7faff;
+      color: #4b5b73;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .primary-btn {
       width: 100%;
-      margin-top: 14px;
+      min-height: 52px;
+      margin-top: 16px;
       border: 0;
       border-radius: 8px;
       padding: 13px 16px;
       background: var(--primary);
       color: #fff;
-      font: inherit;
-      font-weight: 700;
+      font-size: 17px;
+      font-weight: 800;
+      box-shadow: 0 12px 22px rgba(34, 100, 229, 0.28);
     }
 
-    button:disabled {
-      opacity: 0.65;
+    .primary-btn:disabled {
+      opacity: 0.72;
+      box-shadow: none;
     }
 
-    button:not(:disabled):active {
+    .primary-btn:not(:disabled):active {
       background: var(--primary-dark);
-    }
-
-    .result {
-      margin-top: 22px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--surface);
-      padding: 14px;
-      white-space: pre-wrap;
-      font-size: 15px;
+      transform: translateY(1px);
     }
 
     .error {
-      margin-top: 14px;
+      margin-top: 12px;
+      border: 1px solid rgba(180, 35, 24, 0.18);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fff5f4;
       color: var(--danger);
       font-size: 14px;
     }
 
-    .copy-row {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 10px;
+    .result-wrap {
+      margin-top: 16px;
+      border: 1px solid rgba(215, 221, 232, 0.9);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 12px 30px rgba(28, 40, 64, 0.08);
+      overflow: hidden;
     }
 
-    .copy-row button {
-      width: auto;
-      margin-top: 0;
-      padding: 9px 14px;
-      background: #111827;
-      font-size: 14px;
+    .result-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid #edf0f5;
+      padding: 12px 14px;
+      background: #fbfcff;
+    }
+
+    .result-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .copy-btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 11px;
+      background: #152033;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .result {
+      margin: 0;
+      padding: 14px;
+      white-space: pre-wrap;
+      color: #263244;
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .footer-note {
+      margin: 14px 4px 0;
+      color: var(--subtle);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (min-width: 720px) {
+      main {
+        padding-top: 42px;
+      }
+
+      .hero {
+        padding-top: 8px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .panel-body {
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      main {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .hint {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>日报生成器</h1>
-    <p class="subtitle">输入今天的大致工作内容，生成 5 个日报栏目。</p>
+    <header class="hero">
+      <div class="eyebrow">HCM 实施日报</div>
+      <h1>把今天的工作整理成可提交日报</h1>
+      <p class="subtitle">用大白话写就行，系统会整理成 5 个固定栏目，适合手机上快速复制。</p>
+    </header>
 
-    <label for="todayText">今天大致做了什么</label>
-    <textarea id="todayText" placeholder="例如：今天看了 HCM 组织人事模块，处理了报表筛选条件，测试环境复现了数据重复问题，并把进展反馈给导师。"></textarea>
+    <section class="panel">
+      <div class="panel-body">
+        <div class="field-top">
+          <label for="todayText">今天大致做了什么</label>
+          <span class="hint">越具体越自然</span>
+        </div>
 
-    <button id="generateBtn" type="button">生成日报</button>
-    <div id="error" class="error" hidden></div>
+        <textarea id="todayText" placeholder="例如：今天看了 HCM 组织人事模块，处理了报表筛选条件，在测试环境复现了数据重复问题，并把处理进展反馈给导师。"></textarea>
 
-    <section id="resultBox" class="result" hidden></section>
-    <div id="copyRow" class="copy-row" hidden>
-      <button id="copyBtn" type="button">复制结果</button>
-    </div>
+        <div class="chips" aria-label="常见工作方向">
+          <span class="chip">测试环境验证</span>
+          <span class="chip">报表配置</span>
+          <span class="chip">问题复现</span>
+          <span class="chip">导师反馈</span>
+        </div>
+
+        <button id="generateBtn" class="primary-btn" type="button">生成日报</button>
+        <div id="error" class="error" hidden></div>
+      </div>
+    </section>
+
+    <section id="resultWrap" class="result-wrap" hidden>
+      <div class="result-head">
+        <div class="result-title">生成结果</div>
+        <button id="copyBtn" class="copy-btn" type="button">复制</button>
+      </div>
+      <div id="resultBox" class="result"></div>
+    </section>
+
+    <p class="footer-note">生成内容建议再快速看一眼，确认和当天实际工作一致。</p>
   </main>
 
   <script>
     const todayText = document.querySelector("#todayText");
     const generateBtn = document.querySelector("#generateBtn");
     const errorBox = document.querySelector("#error");
+    const resultWrap = document.querySelector("#resultWrap");
     const resultBox = document.querySelector("#resultBox");
-    const copyRow = document.querySelector("#copyRow");
     const copyBtn = document.querySelector("#copyBtn");
 
     function showError(message) {
@@ -169,7 +343,7 @@
       }
 
       generateBtn.disabled = true;
-      generateBtn.textContent = "生成中...";
+      generateBtn.textContent = "正在整理...";
 
       try {
         const response = await fetch("/api/generate", {
@@ -184,8 +358,8 @@
         }
 
         resultBox.textContent = data.report;
-        resultBox.hidden = false;
-        copyRow.hidden = false;
+        resultWrap.hidden = false;
+        resultWrap.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (error) {
         showError(error.message);
       } finally {
@@ -198,7 +372,7 @@
       await navigator.clipboard.writeText(resultBox.textContent);
       copyBtn.textContent = "已复制";
       setTimeout(() => {
-        copyBtn.textContent = "复制结果";
+        copyBtn.textContent = "复制";
       }, 1200);
     });
   </script>
