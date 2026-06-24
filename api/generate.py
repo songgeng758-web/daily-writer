@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler
 
 from dotenv import load_dotenv
@@ -66,6 +67,23 @@ def generate_report(today_text):
 
 
 class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        """访问首页时返回前端页面。"""
+        if self.path not in ["/", "/index.html"]:
+            json_response(self, 404, {"error": "页面不存在。"})
+            return
+
+        try:
+            index_path = Path(__file__).resolve().parent.parent / "index.html"
+            body = index_path.read_text(encoding="utf-8").encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception as error:
+            json_response(self, 500, {"error": f"首页加载失败：{error}"})
+
     def do_POST(self):
         if self.path != "/api/generate":
             json_response(self, 404, {"error": "接口不存在。"})
