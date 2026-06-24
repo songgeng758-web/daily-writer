@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>日报生成器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #d9dee7;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --surface: #ffffff;
+      --danger: #b91c1c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+    }
+
+    main {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 14px;
+      border: 0;
+      border-radius: 8px;
+      padding: 13px 16px;
+      background: var(--primary);
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+    }
+
+    button:not(:disabled):active {
+      background: var(--primary-dark);
+    }
+
+    .result {
+      margin-top: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 14px;
+      white-space: pre-wrap;
+      font-size: 15px;
+    }
+
+    .error {
+      margin-top: 14px;
+      color: var(--danger);
+      font-size: 14px;
+    }
+
+    .copy-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .copy-row button {
+      width: auto;
+      margin-top: 0;
+      padding: 9px 14px;
+      background: #111827;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>日报生成器</h1>
+    <p class="subtitle">输入今天的大致工作内容，生成 5 个日报栏目。</p>
+
+    <label for="todayText">今天大致做了什么</label>
+    <textarea id="todayText" placeholder="例如：今天看了 HCM 组织人事模块，处理了报表筛选条件，测试环境复现了数据重复问题，并把进展反馈给导师。"></textarea>
+
+    <button id="generateBtn" type="button">生成日报</button>
+    <div id="error" class="error" hidden></div>
+
+    <section id="resultBox" class="result" hidden></section>
+    <div id="copyRow" class="copy-row" hidden>
+      <button id="copyBtn" type="button">复制结果</button>
+    </div>
+  </main>
+
+  <script>
+    const todayText = document.querySelector("#todayText");
+    const generateBtn = document.querySelector("#generateBtn");
+    const errorBox = document.querySelector("#error");
+    const resultBox = document.querySelector("#resultBox");
+    const copyRow = document.querySelector("#copyRow");
+    const copyBtn = document.querySelector("#copyBtn");
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.hidden = false;
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.hidden = true;
+    }
+
+    generateBtn.addEventListener("click", async () => {
+      const text = todayText.value.trim();
+      clearError();
+
+      if (!text) {
+        showError("请先输入今天大致做了什么。");
+        return;
+      }
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = "生成中...";
+
+      try {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ today_text: text }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "生成失败，请稍后再试。");
+        }
+
+        resultBox.textContent = data.report;
+        resultBox.hidden = false;
+        copyRow.hidden = false;
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = "生成日报";
+      }
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(resultBox.textContent);
+      copyBtn.textContent = "已复制";
+      setTimeout(() => {
+        copyBtn.textContent = "复制结果";
+      }, 1200);
+    });
+  </script>
+</body>
+</html>
